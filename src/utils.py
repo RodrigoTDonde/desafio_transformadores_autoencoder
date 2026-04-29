@@ -295,6 +295,103 @@ def plot_forecast_vs_real(
     return fig
 
 
+def plot_ot_behavior(
+    df: pd.DataFrame,
+    ot_col: str = "OT",
+    date_col: str = "date",
+    class_col: str = "class",
+):
+    """Painel 2x2 com o comportamento da temperatura do óleo (OT).
+
+    Subplots:
+        (1) Histograma + KDE de OT
+        (2) Boxplot de OT por hora do dia (sazonalidade diária)
+        (3) Boxplot de OT por mês (sazonalidade anual)
+        (4) Distribuição de OT condicionada a class (normal vs falha)
+    """
+    aux = df.copy()
+    aux["hour"] = pd.to_datetime(aux[date_col]).dt.hour
+    aux["month"] = pd.to_datetime(aux[date_col]).dt.month
+
+    fig, axes = plt.subplots(2, 2, figsize=(14, 9))
+
+    sns.histplot(aux[ot_col], bins=60, kde=True, color="steelblue", ax=axes[0, 0])
+    axes[0, 0].axvline(
+        aux[ot_col].mean(),
+        color="red",
+        linestyle="--",
+        label=f"média = {aux[ot_col].mean():.2f} ºC",
+    )
+    axes[0, 0].set_title("Distribuição de OT")
+    axes[0, 0].set_xlabel("Temperatura do óleo (ºC)")
+    axes[0, 0].legend()
+
+    sns.boxplot(
+        data=aux, x="hour", y=ot_col, ax=axes[0, 1], color="lightblue", fliersize=2
+    )
+    axes[0, 1].set_title("OT por hora do dia (sazonalidade diária)")
+    axes[0, 1].set_xlabel("Hora")
+    axes[0, 1].set_ylabel("OT (ºC)")
+
+    sns.boxplot(
+        data=aux, x="month", y=ot_col, ax=axes[1, 0], color="lightgreen", fliersize=2
+    )
+    axes[1, 0].set_title("OT por mês (sazonalidade anual)")
+    axes[1, 0].set_xlabel("Mês")
+    axes[1, 0].set_ylabel("OT (ºC)")
+
+    if class_col in aux.columns:
+        for cls, color, label in [(0, "royalblue", "Normal"), (1, "crimson", "Falha")]:
+            subset = aux.loc[aux[class_col] == cls, ot_col]
+            if len(subset) > 0:
+                sns.kdeplot(
+                    subset,
+                    ax=axes[1, 1],
+                    color=color,
+                    fill=True,
+                    alpha=0.4,
+                    label=f"{label} (n={len(subset)})",
+                )
+        axes[1, 1].set_title("OT — Normal vs Falha")
+        axes[1, 1].set_xlabel("OT (ºC)")
+        axes[1, 1].legend()
+    else:
+        axes[1, 1].axis("off")
+
+    fig.tight_layout()
+    return fig
+
+
+def plot_ot_rolling(
+    df: pd.DataFrame,
+    ot_col: str = "OT",
+    date_col: str = "date",
+    window: int = 24 * 7,
+):
+    """Série temporal de OT com média e desvio móveis (default: janela semanal)."""
+    fig, ax = plt.subplots(figsize=(14, 4))
+    ax.plot(df[date_col], df[ot_col], color="lightgray", lw=0.5, label="OT (bruto)")
+    rolling_mean = df[ot_col].rolling(window=window, min_periods=1).mean()
+    rolling_std = df[ot_col].rolling(window=window, min_periods=1).std()
+    ax.plot(
+        df[date_col], rolling_mean, color="red", lw=1.2, label=f"média móvel ({window}h)"
+    )
+    ax.fill_between(
+        df[date_col],
+        rolling_mean - rolling_std,
+        rolling_mean + rolling_std,
+        color="red",
+        alpha=0.15,
+        label="±1 desvio móvel",
+    )
+    ax.set_title(f"Evolução de OT — média e desvio móveis ({window}h)")
+    ax.set_xlabel("Data")
+    ax.set_ylabel("OT (ºC)")
+    ax.legend(loc="upper left")
+    ax.grid(alpha=0.3)
+    return fig
+
+
 def plot_confusion_matrix(
     y_true: np.ndarray, y_pred: np.ndarray, labels=("Normal", "Falha")
 ):

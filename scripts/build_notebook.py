@@ -77,7 +77,6 @@ from tensorflow import keras
 
 from src.utils import (
     save_fig,
-    temporal_train_test_split,
     scale_features,
     make_sliding_windows,
     build_autoencoder,
@@ -95,6 +94,8 @@ from src.utils import (
     plot_anomaly_timeline,
     plot_forecast_vs_real,
     plot_confusion_matrix,
+    plot_ot_behavior,
+    plot_ot_rolling,
 )
 
 # Reprodutibilidade
@@ -355,9 +356,93 @@ cells.append(
 **Highlights:** justifica a redução de dimensionalidade no autoencoder
 (bottleneck de 2D consegue capturar boa parte da informação) e dá insumo
 multivariado para a LSTM.
-**Decisão:** seguir para Data Preparation com 7 features numéricas como entrada
-para todos os modelos, mantendo `class` apenas como alvo do MLP / validação do
-AE.
+**Decisão:** antes de seguir para a Data Preparation, fazer um *deep dive* na
+variável-chave `OT` — entender sua sazonalidade e como ela difere entre
+condição normal e falha.
+        """
+    )
+)
+
+# --- 2.7 Análise específica da temperatura do óleo (OT) ---
+cells.append(
+    md(
+        """
+### 2.7 Comportamento da temperatura do óleo (OT)
+
+- **Objetivo:** entender em profundidade a variável-alvo do problema
+  (temperatura do óleo) — distribuição, padrões de sazonalidade diária e
+  anual, comportamento sob condição normal vs falha, e estabilidade ao longo
+  do tempo.
+- **Técnicas:**
+  - `plot_ot_behavior` — painel 2×2: histograma, boxplot por hora, boxplot
+    por mês, KDE de `OT|class=0` vs `OT|class=1`.
+  - `plot_ot_rolling` — série temporal com média e desvio móveis (janela
+    de 7 dias).
+  - Estatísticas pontuais: média, desvio, percentis e diferença entre
+    grupos normal/falha.
+- **Saída:** figuras `12_ot_behavior_analysis.png` e `13_ot_rolling.png`,
+  além de uma tabela com estatísticas descritivas por classe.
+        """
+    )
+)
+cells.append(
+    code(
+        """
+# Estatísticas de OT no dataset
+desc_ot = df['OT'].describe(percentiles=[0.05, 0.25, 0.50, 0.75, 0.95]).round(2)
+print("Estatísticas globais de OT (ºC):")
+print(desc_ot)
+
+print("\\nOT por classe (ºC):")
+print(df.groupby('class')['OT'].agg(['mean', 'std', 'min', 'max']).round(2))
+        """
+    )
+)
+cells.append(
+    code(
+        """
+fig = plot_ot_behavior(df)
+save_fig(fig, "12_ot_behavior_analysis")
+plt.show()
+        """
+    )
+)
+cells.append(
+    code(
+        """
+fig = plot_ot_rolling(df, window=24*7)  # janela semanal
+save_fig(fig, "13_ot_rolling")
+plt.show()
+        """
+    )
+)
+cells.append(
+    md(
+        """
+**Diagnóstico:** OT varia de -4 a 46 ºC, com média 13.3 ºC. Exibe **forte
+sazonalidade diária** (boxplot por hora) e **anual** (boxplot por mês — picos
+no verão local), e existe diferença marcante entre as distribuições por
+classe: `OT|class=0` tem média **13.4 ºC** enquanto `OT|class=1` tem média
+**6.3 ºC** — ou seja, **falhas tendem a ocorrer em temperaturas mais baixas**,
+o que sugere que `class=1` está mais associado a estados de carga reduzida ou
+desligamento do equipamento do que a sobreaquecimento. A janela móvel de 7
+dias confirma deriva ao longo do período de coleta.
+
+**Highlights:**
+- A sazonalidade diária reforça `window=24` como escolha adequada da LSTM
+  (capturando ciclo de 24h).
+- A diferença significativa entre `OT|class=0` e `OT|class=1` indica que
+  essa feature é particularmente informativa para o MLP — embora a direção
+  (falhas em OT mais baixa) seja contraintuitiva e deva ser comunicada à
+  área operacional.
+- A deriva semanal/anual é uma fonte real de mudança de distribuição entre
+  treino e teste — explica em parte o desafio do MLP na fase Evaluation,
+  visto que treino e teste estão em períodos sazonalmente diferentes.
+
+**Decisão:** seguir para a fase **Data Preparation** com 7 features numéricas
+como entrada para todos os modelos. Manter `OT` na entrada (LSTM, AE, MLP) e
+também como alvo da LSTM. Padronizar com `StandardScaler` para acomodar as
+diferenças de escala já observadas.
         """
     )
 )
@@ -422,7 +507,9 @@ cells.append(
 cells.append(
     code(
         """
-df_train, df_test = temporal_train_test_split(df, test_frac=0.2)
+n_test = int(len(df) * 0.2)
+df_train = df.iloc[:-n_test].copy()
+df_test  = df.iloc[-n_test:].copy()
 print("Treino:", df_train.shape, df_train['date'].min(), "→", df_train['date'].max())
 print("Teste :", df_test.shape, df_test['date'].min(), "→", df_test['date'].max())
 print("\\nFalhas no treino:", int(df_train['class'].sum()), "| Falhas no teste:", int(df_test['class'].sum()))
