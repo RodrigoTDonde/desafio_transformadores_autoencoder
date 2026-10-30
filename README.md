@@ -1,5 +1,18 @@
 # Desafio — Transformadores no Setor Elétrico
 
+## Portfólio de IA
+
+Trabalho acadêmico da pós-graduação, preservado no portfólio de [Rodrigo Teles Dondé](https://github.com/RodrigoTDonde).
+
+Cópia de estudo colaborativo originalmente mantido por [reynancs](https://github.com/reynancs). Os commits originais são de reyna; esta cópia não reivindica autoria exclusiva de Rodrigo.
+
+**Competências:** Python, TensorFlow/Keras, autoencoder, LSTM, MLP, análise de séries temporais e CRISP-DM.
+
+**Dados:** a procedência dos rótulos `class` ainda precisa ser esclarecida. O repositório permanece privado para essa revisão. [Detalhes e fontes](data/README.md).
+
+**Origem acadêmica:** [reynancs/desafio_transformadores_autoencoder](https://github.com/reynancs/desafio_transformadores_autoencoder). [Registro da migração e créditos](PORTFOLIO.md).
+
+
 > **Projeto acadêmico — Pós-graduação SENAI em Deep Learning (Aula 8: Autoencoders)**
 > Aplicação de Deep Learning para monitoramento de transformadores: detecção
 > de anomalias, previsão temporal e classificação de condições operacionais.
@@ -189,7 +202,7 @@ do problema:
 
 ## Referências
 
-- **Aula 8 — Autoencoders** (slides do curso, em `docs/referencias/`).
+- **Aula 8 — Autoencoders** (slides fornecidos na disciplina, não redistribuídos nesta cópia).
 - **Nielsen, A.** *Análise Prática de Séries Temporais — Predição com Estatística e Aprendizado de Máquina.* O'Reilly.
 - **Auffarth, B.** *Machine Learning for Time-Series with Python.* Packt Publishing, 2021.
 - Hawkins, D. M. *Identification of Outliers.* Chapman & Hall, 1980.
