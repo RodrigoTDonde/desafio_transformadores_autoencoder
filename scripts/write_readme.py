@@ -12,7 +12,7 @@ Cópia de estudo colaborativo originalmente mantido por [reynancs](https://githu
 
 **Competências:** Python, TensorFlow/Keras, autoencoder, LSTM, MLP, análise de séries temporais e CRISP-DM.
 
-**Dados:** a procedência dos rótulos `class` ainda precisa ser esclarecida. O repositório permanece privado para essa revisão. [Detalhes e fontes](data/README.md).
+**Dados:** a procedência dos rótulos `class` ainda precisa ser esclarecida. Projeto público de portfólio; as métricas devem ser interpretadas como resultados do exercício, sem comprovação de falhas reais. [Detalhes e fontes](data/README.md).
 
 **Origem acadêmica:** [reynancs/desafio_transformadores_autoencoder](https://github.com/reynancs/desafio_transformadores_autoencoder). [Registro da migração e créditos](PORTFOLIO.md).
 

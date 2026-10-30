@@ -14,4 +14,4 @@ As sete variáveis numéricas de todas as 17.348 linhas de `transformers.csv` co
 
 O repositório acadêmico usa a coluna `class` como rótulo de normalidade/falha, mas não documenta como ela foi criada. A coincidência numérica com ETTh1 não comprova a procedência desses rótulos nem que indiquem falhas reais. Métricas que usam `class` devem ser interpretadas como resultados do exercício, sem alegar validação de falhas reais.
 
-Esta cópia permanece privada até esclarecer a origem dos rótulos e as condições de publicação da versão adaptada dos dados. Não se deve substituir silenciosamente o CSV pelo ETTh1 público: ele tem quantidade de linhas diferente e não oferece `class`, portanto não reproduz diretamente as métricas históricas.
+Esta cópia foi tornada pública por solicitação do titular do portfólio em 30/10/2026. A publicação não esclarece a origem dos rótulos nem altera os termos da fonte, que continuam registrados acima. Não se deve substituir silenciosamente o CSV pelo ETTh1 público: ele tem quantidade de linhas diferente e não oferece `class`, portanto não reproduz diretamente as métricas históricas.
